@@ -1,0 +1,16 @@
+﻿  Exercise.cpp
+  Function.cpp
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(9): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(23): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(34): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(35): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(48): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(49): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(178): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\function.cpp(246): warning C4267: “参数”: 从“size_t”转换到“int”，可能丢失数据
+  Homework1.cpp
+  Solve.cpp
+e:\mycodes\numericalalgebra\src\第一章\codes\solve.cpp(21): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+e:\mycodes\numericalalgebra\src\第一章\codes\solve.cpp(138): warning C4267: “初始化”: 从“size_t”转换到“int”，可能丢失数据
+  正在生成代码...
+  Homework1.vcxproj -> E:\MyCodes\NumericalAlgebra\src\第一章\bin\x64\Debug\Homework1.exe
