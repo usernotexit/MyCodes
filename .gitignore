@@ -1,3 +1,6 @@
 # remove vs
 **\.vs
 **\bin
+
+# remove pictures
+**\pictures

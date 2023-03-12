@@ -23,7 +23,7 @@ public:
 
     // constructor with initilizer list
 	Matrix(int r, int c)
-		: rows(r), cols(c), data(new Tem[r*c]) {}		// can we add default 0 ?
+		: rows(r), cols(c), data(new Tem[r*c]) {}
 	Matrix(const Matrix& Mat)							// 引用和常值Mat都可以使用该重载
 		: rows(Mat.rows), cols(Mat.cols), data(new Tem[Mat.rows * Mat.cols])
 	{
@@ -290,10 +290,8 @@ void test_2()
 			for (int j = 0; j < B.ncol(); j++)
 			{
 				B(i, j) = i - j;
-				R(i, j) = (rand() % 100) / 9.7;		//
+				R(i, j) = (rand() % 100) / 9.7;
 			}
-	
-		// 矩阵乘法的时间复杂度最高，理论上应该用它来测试效率
 		Matrix<double> C = A * B;			
 		Matrix<double> D; D = R * A;
 	}
@@ -312,10 +310,9 @@ void test_2()
 			for (int j = 0; j < B.cols(); j++)
 			{
 				B(i, j) = i - j;
-				R(i, j) = (rand() % 100) / 9.7;		//
+				R(i, j) = (rand() % 100) / 9.7;
 			}
 
-		// 矩阵乘法的时间复杂度最高，理论上应该用它来测试效率
 		Eigen::MatrixXd C = A * B;
 		Eigen::MatrixXd D(n_cols, n_cols); D = R * A;
 	}
@@ -335,32 +332,8 @@ int main()
 	std::cout << "双精度数据 "; test_1<double>();
 	
 	/* test 2 效率测试 */
-	// https://en.cppreference.com/w/cpp/chrono
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Matrix "; test_2();
 
     return 0;
 }
-
-/*
-	{
-		int n_rows = 3, n_cols = 4;
-		Eigen::MatrixXd A(n_rows, n_cols), B(n_cols, n_rows), R(n_cols, n_rows);
-		for (int i = 0; i < A.rows(); i++)
-			for (int j = 0; j < A.cols(); j++)
-				A(i, j) = i + j;
-		for (int i = 0; i < B.rows(); i++)
-			for (int j = 0; j < B.cols(); j++)
-			{
-				B(i, j) = i - j;
-				R(i, j) = (rand() % 100) / 5.;//
-			}
-
-		Eigen::MatrixXd C = A * B;
-		Eigen::MatrixXd D(n_cols, n_cols); D = R * A;
-		Eigen::MatrixXd E(1, n_rows); E = B.row(1); auto F = A.row(0)*(B + R);
-		std::cout << A << "\n~~~~~~~\n" << B << "\n~~~~~~~\n" << R
-			<< "\n~~~~~~~\n" << C << "\n~~~~~~~\n" << D << "\n~~~~~~~\n"
-			<< E << "\n~~~~~~~\n" << F<< std::endl;
-	}
-*/
