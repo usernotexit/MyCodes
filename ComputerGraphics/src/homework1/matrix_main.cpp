@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "Eigen/Eigen"
+#include "Eigen/Dense"
 //#include <Eigen/QR>
 
 bool Assert(bool state);
@@ -231,7 +231,7 @@ bool Assert(bool state)
 		return true;
 	else
 		std::cout << "Err!" << std::endl;
-	//exit(0);
+	exit(0);
 }
 
 
@@ -241,13 +241,12 @@ class SparseMatrix {
 
 };
 
-//template<typename type>
-//void test()
-int main() 
+template<typename type>
+void test_1()
 {
-	/* test 1.1: 准确性测试 */
-    Matrix<int> A(3,4), B(4,3), R(4,3);			// 指定行列的建构函数
-	srand(time(0));
+	std::cout << "准确性测试:" << std::endl;	// ?<< static_cast<char*>(type) 
+	
+	Matrix<type> A(3, 4), B(4, 3), R(4, 3);		// 指定行列的建构函数
 
 	for (int i = 0; i < A.nrow(); i++)			// 方法 nrow(), ncol()
 		for (int j = 0; j < A.ncol(); j++)
@@ -256,30 +255,112 @@ int main()
 		for (int j = 0; j < B.ncol(); j++)
 		{
 			B(i, j) = i - j;
-			R(i, j) = rand() % 5;
+			R(i, j) = (rand() % 100) / static_cast<type>(5);
 		}
-	
-	Matrix<int> C = A*B;						// 构造函数 Matrix(const Matrix& Mat)
-	Matrix<int> D; D = B*A;						// 默认建构函数，重载运算符 '='
 
-	(B+R).print();								// 重载运算符 '*' 要求返回Matrix值
-    
-	A.print();									// 函数 print() ，输出矩阵值
-    B.print();
-    C.print();
-	D.print();
+	Matrix<type> C = A * B;						// 构造函数 Matrix(const Matrix& Mat)
+	Matrix<type> D; D = B * A;					// 默认建构函数，重载运算符 '='
+	Matrix<type> E(B.row(1));					// 函数 row(), col() ,对应行列
+	E += A.row(0)*(B + R);						// 重载运算符 '+=' '-='等  复杂运算
+	Matrix<type> F(A.submat(0, 2, 1, 2));		// 函数 submat() 取子阵 F=A[1:2, 0:3]
+
+	(B + R).print();							// 重载运算符 '*' 要求返回Matrix值
 	
-	/* test 1.2 准确性测试 */
-	// https://en.cppreference.com/w/cpp/chrono
-	auto start = std::chrono::steady_clock::now();	
+	std::cout << "A: "; A.print();				// 函数 print() ，输出矩阵值
+	std::cout << "B: "; B.print();
+	std::cout << "R: "; R.print();
+	std::cout << "C: "; C.print();
+	std::cout << "D: "; D.print();
+	std::cout << "E: "; E.print();
+	std::cout << "F: "; F.print();
+}
+
+void test_2()
+{
+	std::cout << "效率测试:" << std::endl;
+	int n_rows = 300, n_cols = 200;
+	auto start = std::chrono::steady_clock::now();
+	{
+		Matrix<double> A(n_rows, n_cols), B(n_cols, n_rows), R(n_cols, n_rows);
+
+		for (int i = 0; i < A.nrow(); i++)
+			for (int j = 0; j < A.ncol(); j++)
+				A(i, j) = i + j;
+		for (int i = 0; i < B.nrow(); i++)
+			for (int j = 0; j < B.ncol(); j++)
+			{
+				B(i, j) = i - j;
+				R(i, j) = (rand() % 100) / 9.7;		//
+			}
+	
+		// 矩阵乘法的时间复杂度最高，理论上应该用它来测试效率
+		Matrix<double> C = A * B;			
+		Matrix<double> D; D = R * A;
+	}
 	auto end = std::chrono::steady_clock::now();
 	std::chrono::duration<double> runTime = end - start;
-	std::cout << "Runtime: " << runTime.count() << std::endl;
-    
+	std::cout << "My Matrix, runtime: " << runTime.count() << std::endl;
+
 	// todo 8: use Eigen and compare
-	//auto D = Eigen::Array22d(1, 34, 3, 4);
-	//std::cout << D;
-	Eigen::Matrix<double, 3, 4>();
+	start = std::chrono::steady_clock::now();
+	{
+		Eigen::MatrixXd A(n_rows, n_cols), B(n_cols, n_rows), R(n_cols, n_rows);
+		for (int i = 0; i < A.rows(); i++)
+			for (int j = 0; j < A.cols(); j++)
+				A(i, j) = i + j;
+		for (int i = 0; i < B.rows(); i++)
+			for (int j = 0; j < B.cols(); j++)
+			{
+				B(i, j) = i - j;
+				R(i, j) = (rand() % 100) / 9.7;		//
+			}
+
+		// 矩阵乘法的时间复杂度最高，理论上应该用它来测试效率
+		Eigen::MatrixXd C = A * B;
+		Eigen::MatrixXd D(n_cols, n_cols); D = R * A;
+	}
+	end = std::chrono::steady_clock::now();
+	runTime = end - start;
+	std::cout << "Eigen's Matrix, runtime: " << runTime.count() << std::endl;
+}
+
+int main() 
+{
+	srand(time(0));
+	/* test 1: 正确性测试 */
+	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+	std::cout << "整型数据 "; test_1<int>();
+
+	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+	std::cout << "双精度数据 "; test_1<double>();
+	
+	/* test 2 效率测试 */
+	// https://en.cppreference.com/w/cpp/chrono
+	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+	std::cout << "Matrix "; test_2();
 
     return 0;
 }
+
+/*
+	{
+		int n_rows = 3, n_cols = 4;
+		Eigen::MatrixXd A(n_rows, n_cols), B(n_cols, n_rows), R(n_cols, n_rows);
+		for (int i = 0; i < A.rows(); i++)
+			for (int j = 0; j < A.cols(); j++)
+				A(i, j) = i + j;
+		for (int i = 0; i < B.rows(); i++)
+			for (int j = 0; j < B.cols(); j++)
+			{
+				B(i, j) = i - j;
+				R(i, j) = (rand() % 100) / 5.;//
+			}
+
+		Eigen::MatrixXd C = A * B;
+		Eigen::MatrixXd D(n_cols, n_cols); D = R * A;
+		Eigen::MatrixXd E(1, n_rows); E = B.row(1); auto F = A.row(0)*(B + R);
+		std::cout << A << "\n~~~~~~~\n" << B << "\n~~~~~~~\n" << R
+			<< "\n~~~~~~~\n" << C << "\n~~~~~~~\n" << D << "\n~~~~~~~\n"
+			<< E << "\n~~~~~~~\n" << F<< std::endl;
+	}
+*/
