@@ -1,6 +1,6 @@
 # remove vs
-**\.vs
-**\bin
+**.vs/
+**bin/
 
 # remove pictures
-**\pictures
+**pictures/
