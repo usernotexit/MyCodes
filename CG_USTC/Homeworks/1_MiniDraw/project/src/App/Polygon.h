@@ -18,4 +18,3 @@ protected:
     int n;
     std::vector<QPoint> vertices;
 };
-

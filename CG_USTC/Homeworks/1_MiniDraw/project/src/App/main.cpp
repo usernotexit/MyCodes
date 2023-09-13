@@ -2,7 +2,7 @@
 #include <QtWidgets/QApplication>
 
 #include <QcoreApplication>
-#include "signalsandslots3.h"
+//#include "signalsandslots3.h"
 int main(int argc, char* argv[]) {
 	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
 

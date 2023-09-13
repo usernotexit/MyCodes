@@ -24,13 +24,13 @@ void CPolygon::Draw(QPainter& painter)
 
 void CPolygon::set_start(QPoint p)
 {
-	printf("CPolygon set_start\n");
+	//printf("CPolygon set_start\n");
 	vertices.push_back(p); n = vertices.size();
 }
 
 void CPolygon::set_end(QPoint p)
 {
 	vertices.pop_back();
-	printf("CPolygon set_end\n");
+	//printf("CPolygon set_end\n");
 	vertices.push_back(p); n = vertices.size();
 }

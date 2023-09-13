@@ -1,13 +1,12 @@
 #pragma once
 #include "shape.h"
-
-class Circle :
+class CEllipse :
     public Shape
 {
 public:
-    Circle();
-    ~Circle();
+    CEllipse();
+    ~CEllipse();
 
     void Draw(QPainter& painter);
-    void Draw2(QPainter& painter);
 };
+

@@ -1,4 +1,9 @@
 #include "viewwidget.h"
+#include "Line.h"
+#include "Rect.h"
+#include "Circle.h"
+#include "Polygon.h"
+#include "CEllipse.h"
 
 ViewWidget::ViewWidget(QWidget* parent)
 	: QWidget(parent)
@@ -31,6 +36,11 @@ void ViewWidget::setCirc()
 void ViewWidget::setPoly()
 {
 	type_ = Shape::kPoly;
+}
+
+void ViewWidget::setEllipse()
+{
+	type_ = Shape::kEllipse;
 }
 
 void ViewWidget::undo()
@@ -71,6 +81,9 @@ void ViewWidget::mousePressEvent(QMouseEvent* event)
 				shape_ =  new CPolygon();
 				shape_->set_start(event->pos());
 				break;
+			case Shape::kEllipse:
+				shape_ = new CEllipse();
+				shape_->set_start(event->pos());
 			}
 		if (shape_ != NULL)
 		{
@@ -87,7 +100,7 @@ void ViewWidget::mousePressEvent(QMouseEvent* event)
 		{
 			draw_status_ = false;
 			shape_list_.push_back(shape_);
-			type_ = Shape::kDefault;
+			// type_ = Shape::kDefault;
 		}
 	}
 
@@ -110,28 +123,31 @@ void ViewWidget::mouseReleaseEvent(QMouseEvent* event)
 	{
 		draw_status_ = false;
 		shape_list_.push_back(shape_);
-		type_ = Shape::kDefault;
+		shape_ = NULL;
+		// type_ = Shape::kDefault;
 	}
 }
 
 void ViewWidget::mouseDoubleClickEvent(QMouseEvent* event)
 {
 	/// 在绘制多边形时用于终止作图 // 已废除，请用单击右键的方式
+	/*
 	if (draw_status_ && type_ == Shape::kPoly)
 	{
 		draw_status_ = false;
 		shape_list_.push_back(shape_);
 		shape_ = NULL;
 	}
+	*/
 }
 
 void ViewWidget::paintEvent(QPaintEvent*)
 {
 	QPainter painter(this);
 
-	for (int i = 0; i < shape_list_.size(); i++)
+	for (auto &shape_tmp : shape_list_ )
 	{
-		shape_list_[i]->Draw(painter);
+		shape_tmp->Draw(painter);
 	}
 
 	if (shape_ != NULL) {

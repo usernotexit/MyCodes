@@ -30,6 +30,9 @@ void MiniDraw::Creat_Action() {
 	Action_Poly = new QAction(tr("&Polygon"), this);
 	connect(Action_Poly, &QAction::triggered, view_widget_, &ViewWidget::setPoly);
 
+	Action_Ellipse = new QAction(tr("&Ellipse"), this);
+	connect(Action_Ellipse, &QAction::triggered, view_widget_, &ViewWidget::setEllipse);
+
 	Action_Undo = new QAction(tr("&undo"), this);
 	connect(Action_Undo, &QAction::triggered, view_widget_, &ViewWidget::undo);
 
@@ -44,6 +47,7 @@ void MiniDraw::Creat_ToolBar() {
 	pToolBar->addAction(Action_Rect);
 	pToolBar->addAction(Action_Circ);
 	pToolBar->addAction(Action_Poly);
+	pToolBar->addAction(Action_Ellipse);
 
 	pToolBar->addAction(Action_Undo);
 	pToolBar->addAction(Action_ClearAll);
@@ -56,7 +60,8 @@ void MiniDraw::Creat_Menu() {
 	pMenu->addAction(Action_Rect);
 	pMenu->addAction(Action_Circ);
 	pMenu->addAction(Action_Poly);
-	
+	pMenu->addAction(Action_Ellipse);
+
 	editMenu = menuBar()->addMenu(tr("Edit"));
 	editMenu->addAction(Action_Undo);
 	editMenu->addAction(Action_ClearAll);

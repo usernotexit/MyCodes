@@ -21,6 +21,7 @@ public:
 	QAction* Action_Rect;
 	QAction* Action_Circ;
 	QAction* Action_Poly;
+	QAction* Action_Ellipse;
 	QAction* Action_ClearAll;
 	QAction* Action_Undo;
 

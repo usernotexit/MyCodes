@@ -3,10 +3,6 @@
 #include <ui_viewwidget.h>
 
 #include "Shape.h"
-#include "Line.h"
-#include "Rect.h"
-#include "Circle.h"
-#include "Polygon.h"
 
 #include <qevent.h>
 #include <qpainter.h>
@@ -48,6 +44,7 @@ public slots:
 	void setRect();
 	void setCirc();
 	void setPoly();
+	void setEllipse();
 
 	void undo();
 	void clearAll();
