@@ -5,6 +5,9 @@
 #include <iostream>
 #include <assert.h>
 
+#include <Eigen/Dense>
+#include <ANN/ANN.h>
+
 using std::cout;
 using std::endl;
 
@@ -14,6 +17,7 @@ ImageWidget::ImageWidget(void)
 	ptr_image_backup_ = new QImage();
 	warpingActivate = false;
 	angle = 0.;
+	mode = kRBF_ann; // default warping mode
 }
 
 
@@ -227,11 +231,13 @@ void ImageWidget::Restore()
 	angle = 0.;
 	update();
 }
+
 void ImageWidget::setWarpingActivate()
 {
 	warpingActivate = !warpingActivate;
 }
-#include <Eigen/Dense>
+
+/* Image warping algorthms */
 auto RBF = [](double px, double py, double qx, double qy) {
 	const double e = 2.7182818284, r_2 = 2500;
 	double sigma_2 = (px - qx) * (px - qx) + (py - qy) * (py - qy);//pow(abs(px - qx), 2) + pow(abs(py - qy), 2);
@@ -243,10 +249,42 @@ auto SIGMA = [](double px, double py, double qx, double qy, double mu) {
 	return pow(sigma_2, -mu/2);
 };
 
-#include <ANN/ANN.h>
 void ImageWidget::Warp()
 {
-	Warp_RBF_ann();
+	switch (mode)
+	{
+	case ImageWidget::kRBF_ann:
+		Warp_RBF_ann();
+		break;
+	case ImageWidget::kRBF_std:
+		Warp_RBF_std();
+		break;
+	case ImageWidget::kIDW_ann:
+		Warp_IDW();
+		break;
+	default:
+		cout << "Error!" << endl;
+		break;
+	}
+}
+
+void ImageWidget::setRBFstd()
+{
+	mode = kRBF_std;
+	*(ptr_image_) = *(ptr_image_backup_);
+	Warp();
+}
+
+void ImageWidget::setRBFann()
+{
+	mode = kRBF_ann;
+	Warp();
+}
+
+void ImageWidget::setIDWann()
+{
+	mode = kIDW_ann;
+	Warp();
 }
 
 void ImageWidget::Warp_RBF_ann()
@@ -271,8 +309,6 @@ void ImageWidget::Warp_RBF_ann()
 		P(i, 0) = psrc[i].x(); P(i, 1) = psrc[i].y();
 		Q(i, 0) = pdst[i].x(), Q(i, 1) = pdst[i].y();
 	}
-	//std::cout << P << '\n' << Q << std::endl;
-	//auto sdsd = Q - P * A;// - B;
 	Eigen::MatrixXd alpha = R.colPivHouseholderQr().solve(Q - P);
 
 	// 计算各点新坐标
@@ -295,7 +331,6 @@ void ImageWidget::Warp_RBF_ann()
 	constexpr size_t dim = 2;
 	constexpr size_t K = 4;//取最近邻四个点求平均，目前暂未启用
 
-	ANNcoord* const coords = coords_new.data();//= new ANNcoord[w * h * dim]; // ANNcoord==double
 	ANNpointArray pts_Arr = annAllocPts(n_point, dim);
 	for (size_t i = 0; i < n_point; i++)
 		for (size_t j = 0; j < dim; j++)
@@ -356,8 +391,6 @@ void ImageWidget::Warp_RBF_std()
 		P(i, 0) = psrc[i].x(); P(i, 1) = psrc[i].y();
 		Q(i, 0) = pdst[i].x(), Q(i, 1) = pdst[i].y();
 	}
-	//std::cout << P << '\n' << Q << std::endl;
-	//auto sdsd = Q - P * A;// - B;
 	Eigen::MatrixXd alpha = R.colPivHouseholderQr().solve(Q - P);
 
 	// 计算各点新坐标
@@ -376,6 +409,7 @@ void ImageWidget::Warp_RBF_std()
 	Eigen::MatrixXd coords_new = R_ * alpha + coords_old * A; coords_new += B_;
 	Eigen::MatrixXd tmp = R_ * alpha;
 
+#ifdef _DEBUG
 	for (int i = 0; i < 20; i++)
 	{
 		std::cout << R_.row(i) << std::endl;
@@ -385,21 +419,15 @@ void ImageWidget::Warp_RBF_std()
 	{
 		std::cout << tmp.row(i) << std::endl;
 	}
+#endif // DEBUG
+
 
 	for (int i = 0; i < w; i++)
 	{
 		for (int j = 0; j < h; j++)
 		{
-
-
 			int i_new = round(coords_new(i * h + j, 0)), j_new = round(coords_new(i * h + j, 1));
-			if(i_new<0||i_new>=ptr_image_->width() || j_new<0||j_new>=ptr_image_->height()) 
-			{
-				std::cout << '(' << i_new << ',' << j_new << ')' << std::endl;
-				continue;
-			}
-			QColor color;
-			color = ptr_image_backup_->pixel(QPoint(i, j));
+			QColor color = ptr_image_backup_->pixel(QPoint(i, j));
 
 			ptr_image_->setPixelColor(QPoint(i_new, j_new), color);
 		}
@@ -425,8 +453,7 @@ void ImageWidget::Warp_IDW()
 		P(i, 0) = psrc[i].x(); P(i, 1) = psrc[i].y();
 		Q(i, 0) = pdst[i].x(), Q(i, 1) = pdst[i].y();
 	}
-	for (int i = 0; i < n_psrc; i++)
-		P.row(i) = P.row(i) * D;
+
 
 	// 计算各点新坐标
 	const unsigned int w = ptr_image_backup_->width(), h = ptr_image_backup_->height();
@@ -444,7 +471,7 @@ void ImageWidget::Warp_IDW()
 			{
 				Eigen::MatrixXd X(1, 2); 
 				X(0, 0) = i; X(0, 1) = j;
-				coords_new.row(i * h + j) += SIGMA(i, j, psrc[k].x(), psrc[k].y(), 3) / sigma_sum * (Q.row(k) + X*D - P.row(k));
+				coords_new.row(i * h + j) += SIGMA(i, j, psrc[k].x(), psrc[k].y(), 3) / sigma_sum * (Q.row(k) + X - P.row(k));
 			}
 		}
 
@@ -483,25 +510,4 @@ void ImageWidget::Warp_IDW()
 		}
 	}
 	update();
-	/*
-	// 用正向法填充
-	for (int i = 0; i < w; i++)
-	{
-		for (int j = 0; j < h; j++)
-		{
-
-
-			int i_new = round(coords_new(i * h + j, 0)), j_new = round(coords_new(i * h + j, 1));
-			if (i_new < 0 || i_new >= ptr_image_->width() || j_new < 0 || j_new >= ptr_image_->height())
-			{
-				//std::cout << '(' << i_new << ',' << j_new << ')' << std::endl;
-				continue;
-			}
-			QColor color;
-			color = ptr_image_backup_->pixel(QPoint(i, j));
-
-			ptr_image_->setPixelColor(QPoint(i_new, j_new), color);
-		}
-	}
-	update();*/
 }

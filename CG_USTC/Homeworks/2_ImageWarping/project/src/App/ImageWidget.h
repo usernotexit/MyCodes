@@ -15,6 +15,13 @@ class ImageWidget :
 public:
 	ImageWidget(void);
 	~ImageWidget(void);
+	
+	enum WarpingMode
+	{
+		kRBF_ann = 0,
+		kRBF_std = 1,
+		kIDW_ann = 2,
+	};
 
 protected:
 	void paintEvent(QPaintEvent *paintevent);
@@ -25,6 +32,9 @@ public:
 	void mousePressEvent(QMouseEvent* event);
 	void mouseMoveEvent(QMouseEvent* event);
 	void mouseReleaseEvent(QMouseEvent* event);
+	void Warp_RBF_std();			// RBF ÷±Ω”ÃÓ≥‰
+	void Warp_RBF_ann();			// ”√annÃÓ≥‰∑Ïœ∂								
+	void Warp_IDW();				// IDW
 
 public slots:
 	// File IO
@@ -39,9 +49,9 @@ public slots:
 	void Restore();												// Restore image to origin
 	void setWarpingActivate();									// Change the edit status
 	void Warp();
-	void Warp_RBF_std();		// RBF ÷±Ω”ÃÓ≥‰
-	void Warp_RBF_ann();	// ”√annÃÓ≥‰∑Ïœ∂								
-	void Warp_IDW();	// IDW
+	void setRBFstd();
+	void setRBFann();
+	void setIDWann();
 
 private:
 	QImage		*ptr_image_;				// image 
@@ -50,5 +60,6 @@ private:
 	std::vector<QPoint> pdst;
 	double angle; // rotation
 	bool warpingActivate;
+	WarpingMode mode;
 };
 

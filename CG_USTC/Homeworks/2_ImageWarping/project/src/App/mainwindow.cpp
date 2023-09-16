@@ -70,7 +70,7 @@ void MainWindow::CreateActions()
 		imagewidget_->Mirror(); // use default arguments
 		});
 
-	action_setWarpingMode_ = new QAction(tr("warping mode"), this);
+	action_setWarpingMode_ = new QAction(tr("warping"), this);
 	action_setWarpingMode_->setStatusTip(tr("open or shut down the edit mode"));
 	connect(action_setWarpingMode_, &QAction::triggered, imagewidget_, &ImageWidget::setWarpingActivate);
 
@@ -81,6 +81,18 @@ void MainWindow::CreateActions()
 	action_restore_ = new QAction(tr("Restore"), this);
 	action_restore_->setStatusTip(tr("Show origin image"));
 	connect(action_restore_, &QAction::triggered, imagewidget_, &ImageWidget::Restore);
+
+	action_setRBFann = new QAction(tr("RBF ann"), this);
+	action_setRBFann->setStatusTip(tr("switch the warping mode to RBF_ann"));
+	connect(action_setRBFann, &QAction::triggered, imagewidget_, &ImageWidget::setRBFann);
+
+	action_setRBFstd = new QAction(tr("RBF std"), this);
+	action_setRBFstd->setStatusTip(tr("switch the warping mode to RBF_std"));
+	connect(action_setRBFstd, &QAction::triggered, imagewidget_, &ImageWidget::setRBFstd);
+
+	action_setIDWann = new QAction(tr("IDW ann"), this);
+	action_setIDWann->setStatusTip(tr("switch the warping mode to IDW_ann"));
+	connect(action_setIDWann, &QAction::triggered, imagewidget_, &ImageWidget::setIDWann);
 }
 
 void MainWindow::CreateMenus()
@@ -98,6 +110,12 @@ void MainWindow::CreateMenus()
 	menu_edit_->addAction(action_mirror_);
 	menu_edit_->addAction(action_gray_);
 	menu_edit_->addAction(action_restore_);
+
+	menu_mode_ = menuBar()->addMenu(tr("&Mode"));
+	menu_mode_->setStatusTip(tr("Warping mode menu"));
+	menu_mode_->addAction(action_setRBFann);
+	menu_mode_->addAction(action_setRBFstd);
+	menu_mode_->addAction(action_setIDWann);
 }
 
 void MainWindow::CreateToolBars()
@@ -115,6 +133,10 @@ void MainWindow::CreateToolBars()
 	toolbar_file_->addAction(action_restore_);
 	toolbar_file_->addSeparator();
 	toolbar_file_->addAction(action_setWarpingMode_);
+	toolbar_file_->addSeparator();
+	toolbar_file_->addAction(action_setRBFann);
+	toolbar_file_->addAction(action_setRBFstd);
+	toolbar_file_->addAction(action_setIDWann);
 }
 
 void MainWindow::CreateStatusBar()
