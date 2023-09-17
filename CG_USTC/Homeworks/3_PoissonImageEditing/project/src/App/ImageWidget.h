@@ -11,6 +11,7 @@ QT_END_NAMESPACE
 enum DrawStatus
 {
 	kChoose, 
+	kKeep,
 	kPaste, 
 	kNone,
 	kWarp
@@ -51,8 +52,8 @@ public slots:
 	void Restore();												// Restore image to origin
 
 public:
-	QPoint						point_start_;					// Left top point of rectangle region
-	QPoint						point_end_;						// Right bottom point of rectangle region
+	QPoint						point_curr_;					// current position of the mouse
+	std::vector<QPoint>			point_keys_;					// the vertices of the polygon
 	Mask						mask_selected;
 
 private:

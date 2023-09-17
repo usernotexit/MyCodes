@@ -18,8 +18,7 @@ ImageWidget::ImageWidget(ChildWindow* relatewindow)
 	is_choosing_ = false;
 	is_pasting_ = false;
 
-	point_start_ = QPoint(0, 0);
-	point_end_ = QPoint(0, 0);
+	point_curr_ = QPoint(0, 0);
 
 	source_window_ = NULL;
 }
@@ -75,8 +74,7 @@ void ImageWidget::paintEvent(QPaintEvent* paintevent)
 	// Draw choose region
 	painter.setBrush(Qt::NoBrush);
 	painter.setPen(Qt::red);
-	painter.drawRect(point_start_.x(), point_start_.y(),
-		point_end_.x() - point_start_.x(), point_end_.y() - point_start_.y());
+	mask_selected.Draw(painter);
 
 	painter.end();
 }
@@ -88,35 +86,38 @@ void ImageWidget::mousePressEvent(QMouseEvent* mouseevent)
 		switch (draw_status_)
 		{
 		case kChoose:
+			point_curr_ = mouseevent->pos();
+			if (!is_choosing_)
+			{
+				mask_selected = Mask(point_curr_);
+			}
+			else
+			{
+				mask_selected.add(point_curr_);
+			}			
 			is_choosing_ = true;
-			point_start_ = point_end_ = mouseevent->pos();
-			mask_selected = Mask(point_start_);
 			break;
 
 		case kPaste:
 		{
 			is_pasting_ = true;
 
+			Mask& mask_ = source_window_->imagewidget_->mask_selected;
 			// Start point in object image
 			int xpos = mouseevent->pos().rx();
 			int ypos = mouseevent->pos().ry();
 
 			// Start point in source image
-			int xsourcepos = source_window_->imagewidget_->point_start_.rx();
-			int ysourcepos = source_window_->imagewidget_->point_start_.ry();
+			int xsourcepos = mask_.getLefttop().x();
+			int ysourcepos = mask_.getLefttop().y();
 
 			// Width and Height of rectangle region
-			int w = source_window_->imagewidget_->point_end_.rx()
-				- source_window_->imagewidget_->point_start_.rx() + 1;
-			int h = source_window_->imagewidget_->point_end_.ry()
-				- source_window_->imagewidget_->point_start_.ry() + 1;
+			int w = mask_.getWidth(), h = mask_.getHeight();
 
 			// Poission Editing with rectangle region
 			// editing zone
 			QRect zone_dst(xpos, ypos, w, h), zone_src(xsourcepos, ysourcepos, w, h);
 			const QImage* img_src = source_window_->imagewidget_->image();
-
-			Mask& mask_ = source_window_->imagewidget_->mask_selected;//.get_boundaryAndInner()
 
 			*(image_) = *(image_backup_);
 			mask_.poission_editing(*image(), *img_src, zone_dst, zone_src);
@@ -125,6 +126,24 @@ void ImageWidget::mousePressEvent(QMouseEvent* mouseevent)
 		update();
 		break;
 
+		default:
+			break;
+		}
+	}
+	
+	if (Qt::RightButton == mouseevent->button())
+	{ // 鼠标右键完成多边形的选择
+		switch (draw_status_)
+		{
+		case kChoose:
+			if (is_choosing_)
+			{
+				mask_selected.getMask();
+				mask_selected.get_laplace_precomposed();
+				is_choosing_ = false;
+				draw_status_ = kNone;
+			}
+			break;
 		default:
 			break;
 		}
@@ -139,7 +158,7 @@ void ImageWidget::mouseMoveEvent(QMouseEvent* mouseevent)
 		// Store point position for rectangle region
 		if (is_choosing_)
 		{
-			point_end_ = mouseevent->pos();
+			point_curr_ = mouseevent->pos();
 		}
 		break;
 
@@ -147,26 +166,22 @@ void ImageWidget::mouseMoveEvent(QMouseEvent* mouseevent)
 		// Paste rectangle region to object image
 		if (is_pasting_)
 		{
+			Mask& mask_ = source_window_->imagewidget_->mask_selected;
 			// Start point in object image
 			int xpos = mouseevent->pos().rx();
 			int ypos = mouseevent->pos().ry();
 
 			// Start point in source image
-			int xsourcepos = source_window_->imagewidget_->point_start_.rx();
-			int ysourcepos = source_window_->imagewidget_->point_start_.ry();
+			int xsourcepos = mask_.getLefttop().x();
+			int ysourcepos = mask_.getLefttop().y();
 
 			// Width and Height of rectangle region
-			int w = source_window_->imagewidget_->point_end_.rx()
-				- source_window_->imagewidget_->point_start_.rx() + 1;
-			int h = source_window_->imagewidget_->point_end_.ry()
-				- source_window_->imagewidget_->point_start_.ry() + 1;
+			int w = mask_.getWidth(), h = mask_.getHeight();
 
 			// Poission Editing with rectangle region
 			// editing zone
 			QRect zone_dst(xpos, ypos, w, h), zone_src(xsourcepos, ysourcepos, w, h);
 			const QImage* img_src = source_window_->imagewidget_->image();
-			
-			Mask& mask_ = source_window_->imagewidget_->mask_selected;//.get_boundaryAndInner()
 
 			*(image_) = *(image_backup_);
 			mask_.poission_editing(*image(), *img_src, zone_dst, zone_src);
@@ -186,9 +201,13 @@ void ImageWidget::mouseReleaseEvent(QMouseEvent* mouseevent)
 	case kChoose:
 		if (is_choosing_)
 		{
-			point_end_ = mouseevent->pos();
-			is_choosing_ = false;
-			draw_status_ = kNone;
+			point_curr_ = mouseevent->pos();
+			Mask& mask_ = mask_selected;
+			int num_verts = mask_.getVertexNumber();
+			printf("number of vertices: %d\n", num_verts);
+			/*
+			//is_choosing_ = false;
+			// draw_status_ = kNone;
 			
 			// copied zone in source image
 			int x1 = point_start_.x(), y1 = point_start_.y(),
@@ -199,9 +218,8 @@ void ImageWidget::mouseReleaseEvent(QMouseEvent* mouseevent)
 			QRect zone(xpos, ypos, w, h);
 			mask_selected.add(QPoint(x1, y2));
 			mask_selected.add(QPoint(x2, y2));
-			mask_selected.add(QPoint(x2, y1));
-			mask_selected.getMask();
-			mask_selected.get_laplace_precomposed();
+			mask_selected.add(QPoint(x2, y1));*/
+
 		}
 
 	case kPaste:
@@ -338,6 +356,7 @@ void ImageWidget::TurnGray()
 void ImageWidget::Restore()
 {
 	*(image_) = *(image_backup_);
-	point_start_ = point_end_ = QPoint(0, 0);
+	point_curr_ = QPoint(0, 0);
+	mask_selected.restore();
 	update();
 }
