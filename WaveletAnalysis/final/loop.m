@@ -59,8 +59,9 @@ t2 = t_e;
     end
     Boun_x = false(n_v,1);
     Boun_x(T(Boun_e,1)) = true;    Boun_x(T(Boun_e,2)) = true;
-    gamma_x = 8/5*(3/8+1/4*cos(2*pi./n_neighbor).^2);
-    delta_x = (1 - 8/5*(3/8+1/4*cos(2*pi./n_neighbor).^2))./n_neighbor;
+    % fixed the coefficients gamma_x at 2023/12/7
+    gamma_x = 3/8+(1/8+cos(2*pi./n_neighbor)/4).^2; %8/5*(3/8+1/4*cos(2*pi./n_neighbor).^2);
+    delta_x = (1 - gamma_x)./n_neighbor;
     x_to_e_mat = sparse([T(:,1) T(:,2)], [T(:,5) T(:,5)], ...
         1, n_v, new-1);
         

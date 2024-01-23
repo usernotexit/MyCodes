@@ -1,4 +1,4 @@
-[x, t] = readObj('../obj/Balls.obj');
+[x, t] = readObj('obj/Balls.obj');
 
 figure; subplot(131); trimesh(t, x(:,1), x(:,2), x(:,3), 'edgecolor', 'k'); axis equal; axis off; title('coarse mesh');
 [x2,t2] = loop(x,t);
