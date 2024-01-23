@@ -5,6 +5,8 @@ students/
 .vs/
 _deps/
 
+**/bin/
+
 *Config.h
 
 *.obj
