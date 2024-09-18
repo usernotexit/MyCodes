@@ -88,8 +88,10 @@ bool MinSurf::Run() {
 
 void MinSurf::Minimize() {
 	// TODO
+	/*
 	cout << "WARNING::MinSurf::Minimize:" << endl
 		<< "\t" << "not implemented" << endl;
+	*/
 	// 草，heMesh的意思是“half edge Mesh”
 	// half edge mesh is ready
 	// 两层vector，第一层表示每个亏格，第二层表示亏格中的每条半边

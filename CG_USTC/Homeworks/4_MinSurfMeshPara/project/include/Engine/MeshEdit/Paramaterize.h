@@ -19,5 +19,22 @@ namespace Ubpa {
 		bool Init(Ptr<TriMesh> triMesh);
 
 		bool Run();
+	private:
+		vector<pointf2> param();
+
+	private:
+		class V;
+		class E;
+		class P;
+		class V : public TVertex<V, E, P> {
+		public:
+			vecf3 pos;
+		};
+		class E : public TEdge<V, E, P> { };
+		class P :public TPolygon<V, E, P> { };
+	private:
+		Ptr<TriMesh> triMesh;
+		const Ptr<HEMesh<V>> heMesh; // vertice order is same with triMesh
+
 	};
 }
